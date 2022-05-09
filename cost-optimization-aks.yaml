@@ -1,0 +1,33 @@
+### YamlMime:Architecture
+metadata:
+  title: Cost-optimization considerations and best practices for Kubernetes applications on AKS
+  description: Features, options and best practices for running cost-optimized application on AKS.
+  author: mosabami
+  ms.author: aayodeji
+  ms.date: 04/20/2022
+  ms.topic: conceptual
+  ms.service: architecture-center
+  ms.subservice: example-scenario
+  ms.category:
+    - containers
+    - kubernetes
+    - aks
+  ms.custom:
+    - seojul20
+    - containers
+    - reference-architecture
+    - internal-intro
+    - e2e-aks
+name: Cost-optimization considerations and best practices for Kubernetes applications on AKS
+azureCategories:
+  - containers
+summary: This article includes recommendations for running cost-optimized kubernetes applications on AKS
+products:
+  - azure-application-gateway
+  - azure-container-registry
+  - azure-firewall
+  - azure-kubernetes-service
+  - azure-rbac
+# thumbnailUrl: /azure/architecture/browse/thumbs/secure-baseline-architecture.png
+content: |
+   [!include[](cost-optimization-aks-content.md)]
