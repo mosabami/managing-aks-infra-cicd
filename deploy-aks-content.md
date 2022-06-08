@@ -52,14 +52,26 @@ The [AKS Baseline Automation](https://github.com/Azure/aks-baseline-automation) 
 
 [Sample Workflow](https://github.com/Azure/aks-baseline-automation/blob/main/.github/workflows/IaC-terraform-AKS.yml)
 
-## How to Manage your AKS Cluster
+## Managing Your AKS Cluster
 
-Provide details about the workflow to make changes to the IaC files and show the process to merge and deploy those changes. Examples include:
+After the initial provisioning of your AKS cluster, there will arise situations where you need to make modifications to the clusters. Common examples include:
+- Upgrading the Kubernetes version of the cluster
+- Add or modify a node pool
+- Change an auto scaling profile
+Utilizing the IaC model, these changes to the environment should be performed by updating the Terraform or Bicep code rather than using the Azure Portal or CLI directly. This way the changes can be properly tracked and approved using the pull request process. 
 
-- Upgrading AKS version
-- Adding/modifying node pools
+### Architecture:
+<Insert Visio diagram here>
+  
+### Dataflow:
+  
+1.	Create a new branch and check in the needed IaC code modifications.
+2.	Create a Pull Request (PR) in GitHub once you are ready to merge your changes into your environment.
+3.	A GitHub Actions workflow will trigger to ensure your code is well formatted. In addition, a Terraform Plan or Bicep what-if analysis should run to generate a preview of the changes that will happen in your Azure environment. 
+4.	Once appropriately reviewed, the PR can be merged into your main branch.
+5.	Another GitHub Actions workflow will trigger from the main branch and execute the changes using your IaC provider. 
+6.	A regularly scheduled GitHub Action workflow should also run to look for any configuration drift in your environment and create a new issue if changes are detected.
 
-Also should discuss monitoring for configuration drift
 
 ## How to Manage Multiple AKS Clusters
 
