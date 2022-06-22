@@ -63,7 +63,9 @@ After the initial provisioning of your AKS cluster, there will arise situations 
 Utilizing the IaC model, these changes to the environment should be performed by updating the Terraform or Bicep code rather than using the Azure Portal or CLI directly. This way the changes can be properly tracked and approved using the standard pull request process. 
 
 ### Architecture:
-`TODO`: Insert Visio diagram here>
+`TODO`: Rework diagram into Visio
+
+<img width="1391" alt="image" src="https://user-images.githubusercontent.com/1248896/175121262-a7733f34-f4ad-42ed-983c-c41eccf289dc.png">
   
 ### Dataflow:
   
