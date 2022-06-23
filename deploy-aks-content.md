@@ -1,6 +1,6 @@
 In this article, we'll cover how to utilize CI/CD and Infrastructure as Code (IaC) to deploy an Azure Kubernetes Service cluster in an automated and repeatable fashion.  
 
-A reference architecture for a standard, well-architected AKS cluster is available at GitHub in either [Terraform](https://github.com/Azure/aks-baseline-automation/tree/main/IaC/terraform) or [Bicep](https://github.com/Azure/aks-baseline-automation/tree/main/IaC/bicep) formats. These templates should be cloned and modified to meet the particular needs of your organization. GitHub Actions will then be utilized to automate the process of deploying these template to provision AKS and the associated Azure resources in the cloud.ss 
+A reference architecture for a standard, well-architected AKS cluster is available at GitHub in either [Terraform](https://github.com/Azure/aks-baseline-automation/tree/main/IaC/terraform) or [Bicep](https://github.com/Azure/aks-baseline-automation/tree/main/IaC/bicep) formats. These templates should be cloned and modified to meet the particular needs of your organization. GitHub Actions will then be utilized to automate the process of deploying these template to provision AKS and the associated Azure resources in the cloud.
 
 ![Architecture Overview](https://github.com/Azure/aks-baseline-automation/raw/main/docs/.attachments/IaC.jpg)
 
@@ -28,7 +28,7 @@ https://docs.microsoft.com/en-us/azure/architecture/framework/devops/automation-
 
 ### Baseline Azure Environment
 
-The reference templates are able to be deployed in a standalone fashion using the broader [Cloud Adoption Framework Terraform modules](https://github.com/aztfmod/terraform-azurerm-caf) (for Terraform) or [Common Azure Resource Modules Library](https://github.com/azure/resourcemodules) (for Bicep). If you are deployin as part of an existing [hub-spoke](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke?tabs=cli) topology the variables files will need to be update to reference your existing infrastructure. 
+The reference template is able to be deployed in a standalone fashion using the broader [Cloud Adoption Framework Terraform modules](https://github.com/aztfmod/terraform-azurerm-caf) (for Terraform) or [Common Azure Resource Modules Library](https://github.com/azure/resourcemodules) (for Bicep). If you are deploying as part of an existing [hub-spoke](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke?tabs=cli) topology the variables files will need to be update to reference your existing infrastructure. 
 
 To setup your environment to run the scripts please see [IaC Prequisities](https://github.com/Azure/aks-baseline-automation/blob/main/docs/IaC-prerequisites.md).
 
@@ -46,13 +46,38 @@ The [AKS Baseline Automation](https://github.com/Azure/aks-baseline-automation) 
 
 ### Using Bicep
 
-`TODO` update with new links once merged
+`TODO`: These are links to my personal repo and should be updated if/when we move it the aks-baseline-automation repo
+
+There are two main workflows included in the reference architecture:
+1.  [**Bicep Validate**](https://github.com/tjcorr/bicep-pipeline-demo/blob/main/.github/workflows/bicep-validate.yml)
+
+    This workflow is designed to be run on every commit and is composed of a set of unit tests on the infrastructure code. It runs [bicep build](https://docs.microsoft.com/en-us/cli/azure/bicep?view=azure-cli-latest#az-bicep-build) to compile the bicep to an ARM template. This ensure there are no formatting errors. Next it performs a [validate](https://docs.microsoft.com/en-us/cli/azure/deployment/sub?view=azure-cli-latest#az-deployment-sub-validate) to ensure the template is able to be deployed.
+
+2.  [**Bicep Whatif / Deploy**](https://github.com/tjcorr/bicep-pipeline-demo/blob/main/.github/workflows/bicep-deploy.yml)
+
+    This workflow runs on every pull request and on each commit to the main branch. The whatif stage of the workflow is used to understand the impact of the IaC changes on the Azure environment by running [whatif](https://docs.microsoft.com/en-us/cli/azure/deployment/sub?view=azure-cli-latest#az-deployment-sub-what-if). This report is then attached to the PR for easy review. The deploy stage runs after the whatif analysis when the workflow is triggered by a push to the main branch. This stage will [deploy](https://docs.microsoft.com/en-us/cli/azure/deployment/sub?view=azure-cli-latest#az-deployment-sub-create) the template to Azure after a manual review has signed off.
+
+`TODO`: remove
 [Sample Workflow](https://github.com/Azure/aks-baseline-automation/blob/main/.github/workflows/IaC-bicep-AKS.yml)
 
 ### Using Terraform
+`TODO`: These are links to my personal repo and should be updated if/when we move it the aks-baseline-automation repo
 
-`TODO` update with new links once merged
-[Sample Workflow](https://github.com/Azure/aks-baseline-automation/blob/main/.github/workflows/IaC-terraform-AKS.yml)
+There are three main workflows included in the reference architecture:
+1.	[**Terraform Validate**](https://github.com/tjcorr/tf-pipeline-demo/blob/main/.github/workflows/tf-validate.yml)
+
+    This workflow is designed to be run on every commit and is composed of a set of unit tests on the infrastructure code. It runs [terraform fmt]( https://www.terraform.io/cli/commands/fmt) to ensure the code is properly linted and follows terraform best practices. Next it performs [terraform validate](https://www.terraform.io/cli/commands/validate) to check that the code is syntactically correct and internally consistent.
+
+2.	[**Terraform Plan / Apply**](https://github.com/tjcorr/tf-pipeline-demo/blob/main/.github/workflows/tf-plan-apply.yml)
+
+    This workflow runs on every pull request and on each commit to the main branch. The plan stage of the workflow is used to understand the impact of the IaC changes on the Azure environment by running [terraform plan](https://www.terraform.io/cli/commands/plan). This report is then attached to the PR for easy review. The apply stage runs after the plan when the workflow is triggered by a push to the main branch. This stage will take the plan document and [apply](https://www.terraform.io/cli/commands/apply) the changes after a manual review has signed off if there are any pending changes to the environment.
+
+3.	[**Terraform Drift Detection**](https://github.com/tjcorr/tf-pipeline-demo/blob/main/.github/workflows/tf-drift.yml)
+
+    This workflow runs on a periodic basis to scan your environment for any configuration drift (i.e. changes made outside of terraform). If any drift is detected a GitHub Issue is raised to alert the maintainers of the project.
+
+`TODO`: remove
+Old link: [Sample Workflow](https://github.com/Azure/aks-baseline-automation/blob/main/.github/workflows/IaC-terraform-AKS.yml)
 
 ## Managing Your AKS Cluster
 
