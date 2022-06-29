@@ -38,11 +38,16 @@ The GitHub Actions Workflow will need permissions to your Azure environment. Thi
 
 - **GitHub Secrets**: Secrets are encrypted environment variables that you create in an organization, repository, or environment (see [documentation](https://docs.github.com/en/actions/security-guides/encrypted-secrets)). You would need to generate and store an [Azure Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals#service-principal-object).
 
-- **OpenID Connect (OIDC)**: You can leverage OIDC to give a GitHub Actions Workflow a managed identity that has access to your Azure resources (see [documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure)). 
+- **OpenID Connect (OIDC) (preferred)**: You can leverage OIDC to give a GitHub Actions Workflow a managed identity that has access to your Azure resources (see [documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure)). This method is recommended as it removes the need to store and rotate credentials in GitHub. The sample workflows utilize OIDC and require the following values to be set:
+    - _AZURE_CLIENT_ID_ : The application (client) ID of the app registration in Azure
+    - _AZURE_TENANT_ID_ : The tenant ID of Azure Active Directory where the app registration is defined.
+    - _AZURE_SUBSCRIPTION_ID_ : The subscription ID where the app registration is defined.
 
 ## Deploying with GitHub Actions
 
-The [AKS Baseline Automation](https://github.com/Azure/aks-baseline-automation) GitHub repository provides detailed instructions and sample workflows to deploy the AKS baseline to Azure.
+The [AKS Baseline Automation](https://github.com/Azure/aks-baseline-automation) GitHub repository provides detailed instructions and sample workflows to deploy the AKS baseline to Azure. 
+
+The primary workflow used to deploy the AKS cluster is split apart into two main [jobs](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions#jobs). The first job compares the IaC to what is currently deployed in Azure to allow users to understand exactly what will be added, modified, or deleted as a result of the changes. The second job does the actual deployment of the proposed changes. An [environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) is leveraged on the second job to build an approval process where specific users or teams can sign-off on the proposed changes after reviewing the output of the first job.
 
 ### Using Bicep
 
@@ -85,7 +90,7 @@ After the initial provisioning of your AKS cluster, there will arise situations 
 - Upgrading the Kubernetes version of the cluster
 - Add or modify a node pool
 - Change an auto scaling profile
-Utilizing the IaC model, these changes to the environment should be performed by updating the Terraform or Bicep code rather than using the Azure Portal or CLI directly. This way the changes can be properly tracked and approved using the standard pull request process. 
+Utilizing the IaC model, these changes to the environment should be performed by updating the Terraform or Bicep code rather than using the Azure Portal or CLI directly. This way the changes can be properly tracked and approved using the standard pull request process. The same workflow used to deploy the infrastucture will also run during the pull request process to aid users in validating that the code changes will have the intended effect on the Azure environment.
 
 ### Architecture:
 `TODO`: Rework diagram into Visio
@@ -100,6 +105,24 @@ Utilizing the IaC model, these changes to the environment should be performed by
 4.	Once appropriately reviewed, the PR can be merged into your main branch.
 5.	Another GitHub Actions workflow will trigger from the main branch and execute the changes using your IaC provider. 
 6.	A regularly scheduled GitHub Action workflow should also run to look for any configuration drift in your environment and create a new issue if changes are detected.
+
+## How to Manage Multiple AKS Clusters
+
+In many situations, you will find the need to run multiple AKS clusters, whether for different environments like test and production, separate applications, or different development teams. In these scenarios, the process to deploy the cluster should be replicated by creating multiple different IaC repositories or subfolders, each with their own separate GitHub Actions workflows.  
+
+Redundancy can be reduced by a variety of techniques including:
+
+- **Terraform [modules](https://www.terraform.io/language/modules) or Bicep [modules](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/modules)**
+
+    A group of files can be combined into a reusable module to provide consistency and ensure best practices.
+
+-  **GitHub [reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)**
+
+    A standard workflow can be defined in a central repository and reused rather than copying and pasting from one workflow to another. Workflow reuse also promotes best practices by helping you to use workflows that are well designed, have already been tested, and have been proved to be effective.
+
+- **GitHub [composite actions](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)**
+
+    Several common GitHub actions can be combined into an easy to use composite action that can be reused across projects. 
 
 
 ## Next Steps
